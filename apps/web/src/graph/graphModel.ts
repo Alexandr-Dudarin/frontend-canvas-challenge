@@ -50,6 +50,43 @@ export function fromPersistedGraph(graph: GraphData): CanvasGraph {
   return toPersistedGraph(graph);
 }
 
+export function samePersistedNode(a: NodeData, b: NodeData): boolean {
+  if (
+    a.id !== b.id ||
+    a.type !== b.type ||
+    a.position.x !== b.position.x ||
+    a.position.y !== b.position.y
+  )
+    return false;
+  if (a.type === 'prompt' && b.type === 'prompt') return a.data.text === b.data.text;
+  return a.type !== 'prompt' && b.type !== 'prompt' && a.data.label === b.data.label;
+}
+
+export function samePersistedEdge(
+  a: GraphData['edges'][number],
+  b: GraphData['edges'][number],
+): boolean {
+  return a.id === b.id && a.source === b.source && a.target === b.target;
+}
+
+// Только аварийная сверка после неизвестного PUT. Порядок массивов — часть представления.
+// O(N + E), без stringify, сортировки и промежуточных коллекций.
+export function samePersistedGraph(a: GraphData, b: GraphData): boolean {
+  if (
+    a.nodes.length !== b.nodes.length ||
+    a.edges.length !== b.edges.length ||
+    a.viewport.x !== b.viewport.x ||
+    a.viewport.y !== b.viewport.y ||
+    a.viewport.zoom !== b.viewport.zoom
+  )
+    return false;
+  for (let i = 0; i < a.nodes.length; i++)
+    if (!samePersistedNode(a.nodes[i], b.nodes[i])) return false;
+  for (let i = 0; i < a.edges.length; i++)
+    if (!samePersistedEdge(a.edges[i], b.edges[i])) return false;
+  return true;
+}
+
 export function createNode(
   type: NodeData['type'],
   id: string,

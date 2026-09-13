@@ -12,12 +12,15 @@ import {
   MAX_NODES,
   MAX_PROMPT_LENGTH,
   NODE_EXTENT,
+  samePersistedNode,
+  samePersistedEdge,
   type CanvasGraph,
   type CanvasNode,
 } from './graphModel';
 
-export type EditorState = CanvasGraph & { hasLocalChanges: boolean };
+export type EditorState = CanvasGraph & { revision: number };
 export type EditorAction =
+  | { type: 'replaceFromServer'; state: EditorState }
   | { type: 'nodesChanged'; changes: NodeChange<CanvasNode>[] }
   | { type: 'edgesChanged'; changes: EdgeChange[] }
   | { type: 'addNode'; nodeType: NodeData['type']; id: string }
@@ -26,8 +29,8 @@ export type EditorAction =
   | { type: 'connect'; connection: ConnectionCandidate; id: string }
   | { type: 'viewportChanged'; viewport: GraphData['viewport'] };
 
-export function initialEditorState(graph: GraphData): EditorState {
-  return { ...fromPersistedGraph(graph), hasLocalChanges: false };
+export function initialEditorState(graph: GraphData, revision = 0): EditorState {
+  return { ...fromPersistedGraph(graph), revision };
 }
 
 function withoutIncidentEdges(edges: CanvasGraph['edges'], ids: ReadonlySet<string>) {
@@ -40,11 +43,13 @@ export function deleteNodes(state: EditorState, ids: ReadonlySet<string>): Edito
   const nodes = state.nodes.filter((node) => !ids.has(node.id));
   const edges = withoutIncidentEdges(state.edges, ids);
   if (nodes.length === state.nodes.length && edges === state.edges) return state;
-  return { ...state, nodes, edges, hasLocalChanges: true };
+  return { ...state, nodes, edges, revision: state.revision + 1 };
 }
 
 export function editorReducer(state: EditorState, action: EditorAction): EditorState {
   switch (action.type) {
+    case 'replaceFromServer':
+      return action.state;
     case 'nodesChanged': {
       if (!action.changes.length) return state;
       let removed: Set<string> | undefined;
@@ -59,20 +64,35 @@ export function editorReducer(state: EditorState, action: EditorAction): EditorS
         )
           changed = true;
       }
+      const nodes = applyNodeChanges(action.changes, state.nodes);
+      const edges = removed ? withoutIncidentEdges(state.edges, removed) : state.edges;
+      // Проверяем только кандидатов на постоянную правку; service-only события не сравнивают граф.
+      const persistedChange =
+        changed &&
+        (nodes.length !== state.nodes.length ||
+          nodes.some(
+            (node, index) =>
+              node !== state.nodes[index] && !samePersistedNode(node, state.nodes[index]),
+          ));
       return {
         ...state,
-        nodes: applyNodeChanges(action.changes, state.nodes),
-        edges: removed ? withoutIncidentEdges(state.edges, removed) : state.edges,
-        hasLocalChanges: state.hasLocalChanges || changed,
+        nodes,
+        edges,
+        revision: state.revision + (persistedChange || edges !== state.edges ? 1 : 0),
       };
     }
-    case 'edgesChanged':
+    case 'edgesChanged': {
       if (!action.changes.length) return state;
-      return {
-        ...state,
-        edges: applyEdgeChanges(action.changes, state.edges),
-        hasLocalChanges: state.hasLocalChanges || action.changes.some((c) => c.type !== 'select'),
-      };
+      const edges = applyEdgeChanges(action.changes, state.edges);
+      const persistedChange =
+        action.changes.some((change) => change.type !== 'select') &&
+        (edges.length !== state.edges.length ||
+          edges.some(
+            (edge, index) =>
+              edge !== state.edges[index] && !samePersistedEdge(edge, state.edges[index]),
+          ));
+      return { ...state, edges, revision: state.revision + (persistedChange ? 1 : 0) };
+    }
     case 'addNode': {
       if (state.nodes.length >= MAX_NODES || state.nodes.some((n) => n.id === action.id))
         return state;
@@ -96,7 +116,7 @@ export function editorReducer(state: EditorState, action: EditorAction): EditorS
       return {
         ...state,
         nodes: [...state.nodes, createNode(action.nodeType, action.id, position)],
-        hasLocalChanges: true,
+        revision: state.revision + 1,
       };
     }
     case 'deleteNodes':
@@ -104,11 +124,12 @@ export function editorReducer(state: EditorState, action: EditorAction): EditorS
     case 'editPrompt': {
       const index = state.nodes.findIndex((node) => node.id === action.id);
       const node = state.nodes[index];
-      if (!node || node.type !== 'prompt' || node.data.text === action.text) return state;
+      const text = action.text.slice(0, MAX_PROMPT_LENGTH);
+      if (!node || node.type !== 'prompt' || node.data.text === text) return state;
       // Один поиск, одна копия массива; остальные node objects и все edges сохраняют ссылки.
       const nodes = state.nodes.slice();
-      nodes[index] = { ...node, data: { text: action.text.slice(0, MAX_PROMPT_LENGTH) } };
-      return { ...state, nodes, hasLocalChanges: true };
+      nodes[index] = { ...node, data: { text } };
+      return { ...state, nodes, revision: state.revision + 1 };
     }
     case 'connect':
       // Повторная проверка использует текущее состояние reducer, даже при двух быстрых событиях.
@@ -127,7 +148,7 @@ export function editorReducer(state: EditorState, action: EditorAction): EditorS
             target: action.connection.target!,
           },
         ],
-        hasLocalChanges: true,
+        revision: state.revision + 1,
       };
     case 'viewportChanged':
       if (
@@ -136,6 +157,6 @@ export function editorReducer(state: EditorState, action: EditorAction): EditorS
         state.viewport.zoom === action.viewport.zoom
       )
         return state;
-      return { ...state, viewport: action.viewport, hasLocalChanges: true };
+      return { ...state, viewport: action.viewport, revision: state.revision + 1 };
   }
 }

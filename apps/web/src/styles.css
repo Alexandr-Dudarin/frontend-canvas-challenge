@@ -98,6 +98,34 @@ h1 {
   background: #fff6e6;
   font-size: 0.88rem;
 }
+.save-status {
+  padding: 10px 14px;
+  border-left: 3px solid #af7629;
+  background: #fff6e6;
+  font-size: 0.88rem;
+}
+.save-status--saved {
+  border-color: #41816c;
+  background: #edf7f1;
+}
+.save-status--saving {
+  border-color: #4266b5;
+  background: #edf2ff;
+}
+.save-status--error,
+.save-status--conflict {
+  border-color: #b85b4c;
+  background: #fff0ec;
+}
+.save-status p + p {
+  margin-top: 6px;
+}
+.save-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin: 10px 0;
+}
 .canvas {
   height: max(520px, calc(100dvh - 285px));
   width: 100%;

@@ -12,6 +12,8 @@ import {
 } from '@xyflow/react';
 import type { NodeData } from '@canvas/contracts';
 import type { LoadedSpace } from '../space/spaceLoader';
+import { useGraphAutosave } from '../save/useGraphAutosave';
+import { GraphSaveStatus } from '../save/GraphSaveStatus';
 import { canConnect } from './connectionRules';
 import { GraphActionsContext } from './GraphActions';
 import { canvasNodeTypes } from './CanvasNodes';
@@ -30,6 +32,12 @@ const ariaLabelConfig: Partial<AriaLabelConfig> = {
 
 export function GraphEditor({ loaded }: { loaded: LoadedSpace }) {
   const [state, dispatch] = useReducer(editorReducer, loaded.graph.data, initialEditorState);
+  const { save, retry, reloadServer } = useGraphAutosave(
+    loaded.space.id,
+    loaded.graph.meta.etag,
+    state,
+    dispatch,
+  );
   const onNodesChange = useCallback((changes: NodeChange<CanvasNode>[]) => {
     dispatch({ type: 'nodesChanged', changes });
   }, []);
@@ -85,10 +93,7 @@ export function GraphEditor({ loaded }: { loaded: LoadedSpace }) {
             удаляет выбранные ноды и связи.
           </p>
         </div>
-        <p className="draft-notice" role="status">
-          {state.hasLocalChanges ? 'Есть несохранённые изменения. ' : 'Серверный граф загружен. '}
-          Сохранение пока недоступно: новые правки будут потеряны после перезагрузки.
-        </p>
+        <GraphSaveStatus save={save} retry={retry} reloadServer={reloadServer} />
         {atLimit && (
           <p role="status">Достигнут лимит нод. Удалите ненужную, чтобы добавить новую.</p>
         )}

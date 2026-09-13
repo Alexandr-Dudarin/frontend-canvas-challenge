@@ -4,7 +4,7 @@ import type { ResponseMeta } from '../src/api/apiError';
 import { CURRENT_SPACE_KEY, createCurrentSpaceStorage } from '../src/space/currentSpace';
 
 export const etag = `"${'a'.repeat(64)}"`;
-export const meta: ResponseMeta = {
+export const meta: ResponseMeta & { etag: string } = {
   status: 200,
   etag,
   location: null,

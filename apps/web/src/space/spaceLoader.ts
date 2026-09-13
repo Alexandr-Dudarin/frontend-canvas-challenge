@@ -6,7 +6,7 @@ import type { CurrentSpaceStorage } from './currentSpace';
 
 export function createSpaceLoader(
   spacesApi: SpacesApi,
-  graphApi: GraphApi,
+  graphApi: Pick<GraphApi, 'get'>,
   storage: CurrentSpaceStorage,
 ) {
   let currentId: string | null = null;

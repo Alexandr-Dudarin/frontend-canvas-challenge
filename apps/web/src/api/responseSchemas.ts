@@ -1,4 +1,12 @@
-import { ErrorResponse, Graph, Id, Space, type GraphData, type SpaceData } from '@canvas/contracts';
+import {
+  ErrorResponse,
+  GenerationInput,
+  Graph,
+  Id,
+  Space,
+  type GraphData,
+  type SpaceData,
+} from '@canvas/contracts';
 import type { Static } from '@sinclair/typebox';
 import Ajv from 'ajv';
 import addFormats from 'ajv-formats';
@@ -8,6 +16,8 @@ const ajv = new Ajv();
 addFormats(ajv);
 
 export const isGraph = ajv.compile<GraphData>(Graph);
+// В contracts формат версии графа задан в поле graphETag; используем ту же схему.
+export const isGraphETag = ajv.compile<string>(GenerationInput.properties.graphETag);
 export const isSpace = ajv.compile<SpaceData>(Space);
 export const isId = ajv.compile<string>(Id);
 export const isErrorResponse = ajv.compile<Static<typeof ErrorResponse>>(ErrorResponse);

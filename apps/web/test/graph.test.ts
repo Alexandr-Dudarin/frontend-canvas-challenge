@@ -9,6 +9,7 @@ import {
   MAX_NODES,
   MAX_PROMPT_LENGTH,
   toPersistedGraph,
+  samePersistedGraph,
 } from '../src/graph/graphModel';
 import { deleteNodes, editorReducer, initialEditorState } from '../src/graph/graphState';
 import { isGraph } from '../src/api/responseSchemas';
@@ -96,7 +97,7 @@ test('удаление одной или нескольких нод убира�
   assert.deepEqual(next.edges, [state.edges[1]]);
   assert.equal(next.edges[0], state.edges[1]);
   assert.equal(next.viewport, state.viewport);
-  assert.equal(next.hasLocalChanges, true);
+  assert.equal(next.revision, 1);
   const empty = deleteNodes(state, new Set([p.id, g.id, r.id]));
   assert.equal(empty.nodes.length, 0);
   assert.equal(empty.edges.length, 0);
@@ -143,7 +144,7 @@ test('измерение и выделение не помечают граф и
       { type: 'dimensions', id: state.nodes[0].id, dimensions: { width: 260, height: 200 } },
     ],
   });
-  assert.equal(selected.hasLocalChanges, false);
+  assert.equal(selected.revision, 0);
   const viewport = { x: 110, y: 90, zoom: 1.5 };
   const moved = editorReducer(selected, { type: 'viewportChanged', viewport });
   assert.equal(moved.nodes, selected.nodes);
@@ -201,4 +202,109 @@ test('serialization перечисляет поля contract и не пропу�
   assert.notEqual(snapshot.nodes[0].data, flow.nodes[0].data);
   assert.notEqual(snapshot.edges[0], flow.edges[0]);
   assert.deepEqual(JSON.parse(JSON.stringify(snapshot)), before);
+});
+
+test('revision увеличивается только при реальной persisted правке, service-only и no-op её сохраняют', () => {
+  const initial = initialEditorState(graphFixture());
+  let state = editorReducer(initial, {
+    type: 'nodesChanged',
+    changes: [
+      {
+        type: 'position',
+        id: initial.nodes[0].id,
+        position: { ...initial.nodes[0].position },
+        dragging: false,
+      },
+    ],
+  });
+  assert.equal(state.revision, 0);
+  state = editorReducer(state, {
+    type: 'edgesChanged',
+    changes: [{ type: 'remove', id: state.edges[0].id }],
+  });
+  assert.equal(state.revision, 1);
+  state = editorReducer(state, {
+    type: 'edgesChanged',
+    changes: [{ type: 'remove', id: 'missing' }],
+  });
+  assert.equal(state.revision, 1);
+  state = editorReducer(state, { type: 'connect', connection: initial.edges[0], id: randomUUID() });
+  assert.equal(state.revision, 2);
+  state = editorReducer(state, { type: 'addNode', nodeType: 'result', id: randomUUID() });
+  assert.equal(state.revision, 3);
+  state = editorReducer(state, { type: 'deleteNodes', ids: new Set([state.nodes[3].id]) });
+  assert.equal(state.revision, 4);
+  state = editorReducer(state, { type: 'viewportChanged', viewport: { x: 1, y: 2, zoom: 2 } });
+  assert.equal(state.revision, 5);
+  const replacement = initialEditorState(graphFixture(), 6);
+  assert.equal(
+    editorReducer(state, { type: 'replaceFromServer', state: replacement }),
+    replacement,
+  );
+});
+
+test('persisted equality сравнивает каждое contract field, игнорирует UI/порядок ключей, учитывает порядок массивов', () => {
+  const graph = graphFixture();
+  const ui = fromPersistedGraph(graph);
+  Object.assign(ui.nodes[0], { selected: true, measured: { width: 100, height: 200 } });
+  assert.equal(samePersistedGraph(graph, ui), true);
+  const mutations: ((copy: typeof graph) => void)[] = [
+    (g) => {
+      g.nodes[0].id = randomUUID();
+    },
+    (g) => {
+      g.nodes[1].type = 'result';
+    },
+    (g) => {
+      g.nodes[0].position.x++;
+    },
+    (g) => {
+      g.nodes[0].position.y++;
+    },
+    (g) => {
+      if (g.nodes[0].type === 'prompt') g.nodes[0].data.text += '!';
+    },
+    (g) => {
+      if (g.nodes[1].type !== 'prompt') g.nodes[1].data.label += '!';
+    },
+    (g) => {
+      g.edges[0].id = randomUUID();
+    },
+    (g) => {
+      g.edges[0].source = randomUUID();
+    },
+    (g) => {
+      g.edges[0].target = randomUUID();
+    },
+    (g) => {
+      g.viewport.x++;
+    },
+    (g) => {
+      g.viewport.y++;
+    },
+    (g) => {
+      g.viewport.zoom++;
+    },
+    (g) => {
+      g.nodes.pop();
+    },
+    (g) => {
+      g.edges.pop();
+    },
+    (g) => {
+      g.nodes.reverse();
+    },
+    (g) => {
+      g.edges.reverse();
+    },
+  ];
+  for (const mutate of mutations) {
+    const copy = structuredClone(graph);
+    mutate(copy);
+    assert.equal(samePersistedGraph(graph, copy), false);
+  }
+  assert.equal(
+    samePersistedGraph(graph, { viewport: graph.viewport, edges: graph.edges, nodes: graph.nodes }),
+    true,
+  );
 });
