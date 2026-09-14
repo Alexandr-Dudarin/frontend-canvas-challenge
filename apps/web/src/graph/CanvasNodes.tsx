@@ -2,6 +2,7 @@ import { memo } from 'react';
 import type { NodeProps, NodeTypes } from '@xyflow/react';
 import { useGraphActions } from './GraphActions';
 import { NodeFrame } from './NodeFrame';
+import { GeneratorControls, GenerationResult } from '../generation/GenerationControls';
 import {
   MAX_PROMPT_LENGTH,
   type PromptNode,
@@ -33,7 +34,7 @@ const Generator = memo(function Generator({ id, data, isConnectable }: NodeProps
   return (
     <NodeFrame id={id} type="generator" title={data.label} isConnectable={isConnectable}>
       <p>Соедините вход с текстом, а выход — с результатом.</p>
-      <p className="muted">Запуск генерации пока недоступен.</p>
+      <GeneratorControls nodeId={id} />
     </NodeFrame>
   );
 });
@@ -41,8 +42,7 @@ const Generator = memo(function Generator({ id, data, isConnectable }: NodeProps
 const Result = memo(function Result({ id, data, isConnectable }: NodeProps<ResultNode>) {
   return (
     <NodeFrame id={id} type="result" title={data.label} isConnectable={isConnectable}>
-      <p>Место для результата генератора.</p>
-      <p className="muted">Изображение пока не загружается.</p>
+      <GenerationResult nodeId={id} />
     </NodeFrame>
   );
 });

@@ -96,7 +96,8 @@ export function createHttpClient(baseUrl: string, fetcher: typeof fetch = global
     }
   }
 
-  return { request };
+  // И запросы, и относительные адреса assets используют один API base URL.
+  return { request, resolveUrl: (path: string) => `${base}${path}` };
 }
 
 export type HttpClient = ReturnType<typeof createHttpClient>;

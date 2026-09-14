@@ -292,6 +292,12 @@ export function createGraphSaveCoordinator(options: {
     flush,
     retry,
     reloadServer,
+    reportConflict(error: ApiRequestError) {
+      if (disposed) return;
+      // GRAPH_CHANGED может прийти от generation, даже когда local Graph считается saved.
+      fail({ status: 'conflict', error });
+      publish();
+    },
     dispose,
   };
 }

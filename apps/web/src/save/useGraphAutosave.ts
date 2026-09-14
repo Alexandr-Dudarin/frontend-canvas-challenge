@@ -1,5 +1,6 @@
 import { useCallback, useLayoutEffect, useRef, useState, type Dispatch } from 'react';
 import { apiClient } from '../api/client';
+import type { ApiRequestError } from '../api/apiError';
 import { createGraphApi } from '../api/graphApi';
 import { toPersistedGraph } from '../graph/graphModel';
 import { initialEditorState, type EditorAction, type EditorState } from '../graph/graphState';
@@ -66,5 +67,9 @@ export function useGraphAutosave(
   }, []);
   const retry = useCallback(() => coordinator.current?.retry(), []);
   const reloadServer = useCallback(() => coordinator.current?.reloadServer(), []);
-  return { save, flush, retry, reloadServer };
+  const reportConflict = useCallback(
+    (error: ApiRequestError) => coordinator.current?.reportConflict(error),
+    [],
+  );
+  return { save, flush, retry, reloadServer, reportConflict };
 }

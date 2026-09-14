@@ -18,6 +18,7 @@ body {
   min-width: 320px;
 }
 button,
+select,
 textarea {
   font: inherit;
 }
@@ -184,7 +185,8 @@ h1 {
   margin-bottom: 6px;
   font-weight: 600;
 }
-.node-content textarea {
+.node-content textarea,
+.node-content select {
   display: block;
   width: 100%;
   min-width: 0;
@@ -203,6 +205,32 @@ h1 {
 }
 .muted {
   color: #526079;
+}
+.generation-controls {
+  margin-top: 12px;
+}
+.generation-controls button,
+.generation-error button {
+  margin-top: 10px;
+}
+.generation-controls > button {
+  width: 100%;
+}
+.generation-controls p,
+.generation-result p {
+  margin-top: 8px;
+}
+.generation-error {
+  color: #853529;
+  overflow-wrap: anywhere;
+  padding: 8px 0;
+}
+.generation-result img {
+  display: block;
+  width: 100%;
+  height: auto;
+  border-radius: 6px;
+  margin-top: 10px;
 }
 .node-ports {
   position: relative;
