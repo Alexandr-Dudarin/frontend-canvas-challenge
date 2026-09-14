@@ -252,14 +252,17 @@ Location, config и доступность SVG. Тест потери ответ
 Production build выдаёт прежнее предупреждение о едином JS chunk больше 500 kB. Code splitting
 пока не добавлен; повышение порога предупреждения его не маскирует.
 
-Редактор, handles и сохранение прошли локальную ручную проверку. Generation flow пока
-проверен автоматическими тестами и реальным HTTP, не браузером. Нужен ручной review:
-success/failure/retry, F5 во время processing, unknown POST, переподключение и удаление result,
-keyboard, Web Locks между вкладками и layout 1280 px с изображением.
+Редактор, handles, сохранение и основной generation flow прошли локальную ручную проверку:
+success, тестовый failure и новая успешная попытка после failure подтверждены в браузере.
+Сложные recovery/race-сценарии — reload во время processing, unknown POST, stale result после
+delete/reconnect, поздние ответы и межвкладочная конкуренция — покрыты специализированными
+регрессионными и реальными HTTP-тестами; не каждый из них воспроизводился вручную в браузере.
+
+Fresh-clone audit публичного репозитория проходит полностью: `npm ci`, `check:web`
+(75/75 frontend tests), исходные 10 backend tests и официальный `npm run smoke` — PASS.
 
 Ограничения:
 
-- Generation browser QA ещё не завершён.
 - Повреждённая recovery запись или IDEMPOTENCY_CONFLICT требуют разбора данных;
   автоматического удаления/смены ключа и специального интерфейса ремонта нет.
 - Без Web Locks защита вкладок ограничена; локальный synchronous lock и серверные
