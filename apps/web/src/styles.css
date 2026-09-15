@@ -1,0 +1,313 @@
+:root {
+  font-family:
+    system-ui,
+    -apple-system,
+    BlinkMacSystemFont,
+    'Segoe UI',
+    sans-serif;
+  color: #202b40;
+  background: #f4f6fa;
+  font-synthesis: none;
+  line-height: 1.5;
+}
+* {
+  box-sizing: border-box;
+}
+body {
+  margin: 0;
+  min-width: 320px;
+}
+button,
+select,
+textarea {
+  font: inherit;
+}
+button {
+  border: 1px solid #a4b2c9;
+  border-radius: 8px;
+  background: #fff;
+  color: #202b40;
+  padding: 0.55rem 0.85rem;
+  cursor: pointer;
+}
+button:hover:not(:disabled) {
+  background: #eaf0ff;
+  border-color: #345cbd;
+}
+button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+:focus-visible {
+  outline: 3px solid #315ac2;
+  outline-offset: 3px;
+}
+h1,
+h2,
+p {
+  margin: 0;
+}
+h1 {
+  font-size: 1.7rem;
+  letter-spacing: -0.04em;
+}
+.app-shell {
+  max-width: 1600px;
+  margin: 0 auto;
+  padding: 24px;
+}
+.app-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  margin-bottom: 20px;
+}
+.eyebrow {
+  color: #43619c;
+  font-size: 0.72rem;
+  letter-spacing: 0.18em;
+  font-weight: 700;
+}
+.space-title {
+  overflow-wrap: anywhere;
+  text-align: right;
+}
+.editor {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.editor-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+}
+.node-count {
+  margin-left: auto;
+  color: #526079;
+  font-size: 0.85rem;
+}
+.editor-help {
+  color: #526079;
+  font-size: 0.86rem;
+}
+.draft-notice {
+  padding: 10px 14px;
+  border-left: 3px solid #af7629;
+  background: #fff6e6;
+  font-size: 0.88rem;
+}
+.save-status {
+  padding: 10px 14px;
+  border-left: 3px solid #af7629;
+  background: #fff6e6;
+  font-size: 0.88rem;
+}
+.save-status--saved {
+  border-color: #41816c;
+  background: #edf7f1;
+}
+.save-status--saving {
+  border-color: #4266b5;
+  background: #edf2ff;
+}
+.save-status--error,
+.save-status--conflict {
+  border-color: #b85b4c;
+  background: #fff0ec;
+}
+.save-status p + p {
+  margin-top: 6px;
+}
+.save-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin: 10px 0;
+}
+.canvas {
+  height: max(520px, calc(100dvh - 285px));
+  width: 100%;
+  border: 1px solid #cbd4e2;
+  border-radius: 12px;
+  overflow: hidden;
+  background: #fcfdff;
+}
+.canvas-node {
+  width: 260px;
+  background: #fff;
+  border: 1px solid #a4b2c9;
+  border-top: 4px solid #4266b5;
+  border-radius: 10px;
+  box-shadow: 0 3px 10px #263f6810;
+}
+.canvas-node--generator {
+  border-top-color: #856233;
+}
+.canvas-node--result {
+  border-top-color: #41816c;
+}
+.react-flow__node.selected .canvas-node {
+  box-shadow: 0 0 0 2px #315ac2;
+}
+.react-flow__node:focus-visible {
+  outline: 3px solid #315ac2;
+  outline-offset: 4px;
+  border-radius: 10px;
+}
+.node-heading {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid #e3e8f1;
+  padding: 10px 12px;
+}
+.node-heading h2 {
+  font-size: 0.94rem;
+  overflow-wrap: anywhere;
+  min-width: 0;
+}
+.node-delete {
+  font-size: 0.7rem;
+  padding: 5px 7px;
+  flex-shrink: 0;
+}
+.node-content {
+  padding: 12px;
+  font-size: 0.86rem;
+  min-height: 110px;
+}
+.node-content label {
+  display: block;
+  margin-bottom: 6px;
+  font-weight: 600;
+}
+.node-content textarea,
+.node-content select {
+  display: block;
+  width: 100%;
+  min-width: 0;
+  border: 1px solid #a4b2c9;
+  border-radius: 6px;
+  padding: 8px;
+  resize: vertical;
+}
+.node-content small {
+  display: block;
+  margin-top: 4px;
+  color: #526079;
+}
+.node-content p + p {
+  margin-top: 8px;
+}
+.muted {
+  color: #526079;
+}
+.generation-controls {
+  margin-top: 12px;
+}
+.generation-controls button,
+.generation-error button {
+  margin-top: 10px;
+}
+.generation-controls > button {
+  width: 100%;
+}
+.generation-controls p,
+.generation-result p {
+  margin-top: 8px;
+}
+.generation-error {
+  color: #853529;
+  overflow-wrap: anywhere;
+  padding: 8px 0;
+}
+.generation-result img {
+  display: block;
+  width: 100%;
+  height: auto;
+  border-radius: 6px;
+  margin-top: 10px;
+}
+.node-ports {
+  position: relative;
+  display: flex;
+  min-height: 32px;
+  padding: 6px 12px;
+  gap: 8px;
+  border-top: 1px solid #e3e8f1;
+  font-size: 0.68rem;
+  color: #526079;
+}
+.port-label--output {
+  margin-left: auto;
+  text-align: right;
+}
+.react-flow__handle {
+  width: 12px;
+  height: 12px;
+  background: #4266b5;
+  border: 2px solid #fff;
+}
+/* Расширяем область захвата, сохраняя размер точки и геометрию связей React Flow. */
+.react-flow__handle::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 18px;
+  height: 18px;
+  transform: translate(-50%, -50%);
+  pointer-events: inherit;
+}
+.react-flow__edge-path {
+  stroke: #647caa;
+  stroke-width: 2;
+}
+.react-flow__edge.selected .react-flow__edge-path {
+  stroke: #244ec2;
+  stroke-width: 3;
+}
+.react-flow__controls button {
+  border-radius: 0;
+}
+.empty-canvas {
+  position: absolute;
+  top: 45%;
+  width: 100%;
+  text-align: center;
+  color: #526079;
+  padding: 20px;
+  pointer-events: none;
+}
+.load-state {
+  margin-top: 30px;
+  padding: 24px;
+  background: #fff;
+  border: 1px solid #cbd4e2;
+  border-radius: 10px;
+}
+.error-state {
+  border-color: #b87b71;
+}
+.error-state p {
+  margin-bottom: 12px;
+}
+@media (max-width: 680px) {
+  .app-shell {
+    padding: 14px;
+  }
+  .app-heading {
+    align-items: flex-start;
+  }
+  .node-count {
+    width: 100%;
+    margin-left: 0;
+  }
+  .canvas {
+    height: 560px;
+  }
+}

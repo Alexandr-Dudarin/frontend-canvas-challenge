@@ -13,6 +13,11 @@
   },
   "scripts": {
     "dev": "npm run build -w @canvas/contracts && npm run dev -w @canvas/api",
+    "dev:web": "npm run build -w @canvas/contracts && npm run dev -w @canvas/web",
+    "build:web": "npm run build -w @canvas/contracts && npm run build -w @canvas/web",
+    "typecheck:web": "npm run build -w @canvas/contracts && npm run typecheck -w @canvas/web",
+    "test:web": "npm run build -w @canvas/contracts && npm run test -w @canvas/web",
+    "check:web": "npm run format:check -w @canvas/web && npm run build:web && npm run test:web",
     "build": "npm run build -w @canvas/contracts && npm run build -w @canvas/api",
     "start": "npm run start -w @canvas/api",
     "test": "npm run build && npm run test -w @canvas/api",
